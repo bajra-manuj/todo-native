@@ -22,13 +22,19 @@ export default function Note({
   handlePressEdit,
   handleLongPress,
 }: NoteProps): JSX.Element {
-  const backgroundColor = note.done ? 'green' : '#aaffff';
+  const backgroundColor = note.done ? 'mediumspringgreen' : 'white';
+  const textDecorationLine = note.done ? 'line-through' : 'none';
   return (
     <View>
       <Pressable
-        style={{...styles.note, backgroundColor}}
+        style={{
+          ...styles.note,
+          backgroundColor,
+        }}
         onLongPress={() => handleLongPress(note.id)}>
-        <Text>{note.title}</Text>
+        <Text style={{...styles.noteTitle, textDecorationLine}}>
+          {note.title}
+        </Text>
         <View style={styles.buttons}>
           <Pressable
             style={styles.button}
@@ -55,8 +61,13 @@ const styles = StyleSheet.create({
     padding: 10,
     margin: 10,
     flex: 1,
+    borderWidth: 1,
+    borderRadius: 5,
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  noteTitle: {
+    textDecorationStyle: 'solid',
   },
   buttons: {
     flexDirection: 'row',
