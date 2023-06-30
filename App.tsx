@@ -11,67 +11,80 @@ import React, {useRef, useState} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
-  Text,
   TextInput,
   View,
   Button,
   ScrollView,
 } from 'react-native';
-
-type Note = {
-  id: string;
-  title: string;
-  done: boolean;
-};
-
-// type NoteProps = {
-//   note: Note;
-//   handlePress: Function;
-// };
-
-function Note({note, handlePress}): JSX.Element {
-  const backgroundColor = note.done ? 'green' : 'red';
-  return (
-    <View style={{...styles.note, backgroundColor}} onTouchEnd={handlePress}>
-      <Text>{note.title}</Text>
-    </View>
-  );
-}
+import Note from './Components/Note';
+import {NoteType} from './Components/Note';
 
 type Mode = 'edit' | 'add';
 
-function App(): JSX.Element {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [currentNote, setCurrentNote] = useState<Note>({
-    id: '',
-    title: '',
+function createNote(text: string): NoteType {
+  return {
+    id: uuidv4(),
+    title: text,
     done: false,
-  });
+  };
+}
+
+function App(): JSX.Element {
+  const [notes, setNotes] = useState<NoteType[]>([]);
+  const [currentNote, setCurrentNote] = useState('');
   const [currentMode, setCurrentMode] = useState<Mode>('add');
+  const [currentlyEditingNote, setCurrentlyEditingNote] =
+    useState<NoteType | null>(null);
   const inputRef = useRef<TextInput>(null);
 
   const handlePress = () => {
-    if (currentMode === 'add') {
-      const newNote = {...currentNote, id: uuidv4()};
-      setNotes(oldNotes => [...oldNotes, newNote]);
-    } else {
-      setNotes(oldNotes =>
-        oldNotes.map(oldNote => {
-          if (oldNote.id === currentNote.id) {
-            return {
-              id: currentNote.id,
-              title: currentNote.title,
-              done: false,
-            };
-          }
-          return oldNote;
-        }),
-      );
+    if (currentNote.length === 0) {
+      return;
     }
-    setCurrentNote({title: '', done: false, id: ''});
+    if (currentMode === 'add') {
+      const newNote = createNote(currentNote);
+      setNotes([...notes, newNote]);
+      setCurrentNote('');
+      return;
+    }
+    if (!currentlyEditingNote) {
+      return;
+    }
+    setNotes(oldNotes =>
+      oldNotes.map(note => {
+        if (note.id === currentlyEditingNote?.id) {
+          return {
+            ...currentlyEditingNote,
+            title: currentNote,
+            done: false,
+          };
+        }
+        return note;
+      }),
+    );
+    setCurrentNote('');
+    setCurrentlyEditingNote(null);
     setCurrentMode('add');
   };
-
+  const handlePressDelete = (id: string) => {
+    setNotes(oldNotes => oldNotes.filter(note => note.id !== id));
+  };
+  const handlePressEdit = (note: NoteType) => {
+    setCurrentMode('edit');
+    setCurrentlyEditingNote(note);
+    setCurrentNote(note.title);
+    inputRef.current?.focus();
+  };
+  const handleLongPress = (id: string) => {
+    setNotes(oldNotes =>
+      oldNotes.map(note => {
+        if (note.id === id) {
+          return {...note, done: !note.done};
+        }
+        return note;
+      }),
+    );
+  };
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.notesContainer}>
@@ -80,24 +93,18 @@ function App(): JSX.Element {
             <Note
               key={note.id}
               note={note}
-              handlePress={() => {
-                setCurrentMode('edit');
-                setCurrentNote({
-                  id: note.id,
-                  title: note.title,
-                  done: note.done,
-                });
-                inputRef.current?.focus();
-              }}
+              handlePressDelete={handlePressDelete}
+              handlePressEdit={handlePressEdit}
+              handleLongPress={handleLongPress}
             />
           ))}
       </ScrollView>
       <View style={styles.inputContainer}>
         <TextInput
-          value={currentNote.title}
+          value={currentNote}
           placeholder="Enter note"
-          onChangeText={text => setCurrentNote({...currentNote, title: text})}
-          onSubmitEditing={handlePress}
+          onChangeText={text => setCurrentNote(text)}
+          // onSubmitEditing={handleSubmitEditing}
           ref={inputRef}
         />
         <Button
