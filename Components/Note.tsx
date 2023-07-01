@@ -2,6 +2,8 @@ import {faPen, faTrash} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {useDispatch} from 'react-redux';
+import {deleteNote, toggleDoneStatus} from '../slices/noteSlice';
 
 export type NoteType = {
   id: string;
@@ -11,19 +13,21 @@ export type NoteType = {
 
 export type NoteProps = {
   note: NoteType;
-  handlePressDelete: (id: string) => void;
   handlePressEdit: (note: NoteType) => void;
-  handleLongPress: (id: string) => void;
 };
 
-export default function Note({
-  note,
-  handlePressDelete,
-  handlePressEdit,
-  handleLongPress,
-}: NoteProps): JSX.Element {
+export default function Note({note, handlePressEdit}: NoteProps): JSX.Element {
   const backgroundColor = note.done ? 'mediumspringgreen' : 'white';
   const textDecorationLine = note.done ? 'line-through' : 'none';
+  const dispatch = useDispatch();
+
+  const handlePressDelete = (id: string) => {
+    dispatch(deleteNote(id));
+  };
+
+  const handleLongPress = (id: string) => {
+    dispatch(toggleDoneStatus(id));
+  };
   return (
     <View>
       <Pressable

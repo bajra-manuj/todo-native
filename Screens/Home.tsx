@@ -19,12 +19,7 @@ import {
 import Note from '../Components/Note';
 import {NoteType} from '../Components/Note';
 import {useDispatch, useSelector} from 'react-redux';
-import {
-  addNewNote,
-  deleteNote,
-  toggleDoneStatus,
-  updateNote,
-} from '../slices/noteSlice';
+import {addNewNote, updateNote} from '../slices/noteSlice';
 
 type Mode = 'edit' | 'add';
 
@@ -51,7 +46,6 @@ function Home(): JSX.Element {
     }
     if (currentMode === 'add') {
       const newNote = createNote(currentNote);
-      // setNotes([...notes, newNote]);
       dispatch(addNewNote(newNote));
       setCurrentNote('');
       return;
@@ -66,30 +60,20 @@ function Home(): JSX.Element {
     setCurrentlyEditingNote(null);
     setCurrentMode('add');
   };
-  const handlePressDelete = (id: string) => {
-    dispatch(deleteNote(id));
-  };
+
   const handlePressEdit = (note: NoteType) => {
     setCurrentMode('edit');
     setCurrentlyEditingNote(note);
     setCurrentNote(note.title);
     inputRef.current?.focus();
   };
-  const handleLongPress = (id: string) => {
-    dispatch(toggleDoneStatus(id));
-  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.notesContainer}>
         {!!notes.length &&
           notes.map(note => (
-            <Note
-              key={note.id}
-              note={note}
-              handlePressDelete={handlePressDelete}
-              handlePressEdit={handlePressEdit}
-              handleLongPress={handleLongPress}
-            />
+            <Note key={note.id} note={note} handlePressEdit={handlePressEdit} />
           ))}
       </ScrollView>
       <View style={styles.inputContainer}>
@@ -102,7 +86,8 @@ function Home(): JSX.Element {
             setCurrentlyEditingNote(null);
             setCurrentNote('');
           }}
-          // onSubmitEditing={handleSubmitEditing}
+          blurOnSubmit={false}
+          onSubmitEditing={() => handlePress()}
           ref={inputRef}
         />
         <Button
