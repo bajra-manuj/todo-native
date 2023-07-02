@@ -1,7 +1,12 @@
-import {faPen, faTrash} from '@fortawesome/free-solid-svg-icons';
+import {
+  faCircleXmark,
+  faSquareCheck,
+  faTrash,
+} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 import {useDispatch} from 'react-redux';
 import {deleteNote, toggleDoneStatus} from '../slices/noteSlice';
 
@@ -13,13 +18,12 @@ export type NoteType = {
 
 export type NoteProps = {
   note: NoteType;
-  handlePressEdit: (note: NoteType) => void;
 };
 
-export default function Note({note, handlePressEdit}: NoteProps): JSX.Element {
-  const backgroundColor = note.done ? 'mediumspringgreen' : 'white';
+export default function Note({note}: NoteProps): JSX.Element {
   const textDecorationLine = note.done ? 'line-through' : 'none';
   const dispatch = useDispatch();
+  const navigation = useNavigation();
 
   const handlePressDelete = (id: string) => {
     dispatch(deleteNote(id));
@@ -33,8 +37,8 @@ export default function Note({note, handlePressEdit}: NoteProps): JSX.Element {
       <Pressable
         style={{
           ...styles.note,
-          backgroundColor,
         }}
+        onPress={() => navigation.navigate('Note', {note})}
         onLongPress={() => handleLongPress(note.id)}>
         <Text style={{...styles.noteTitle, textDecorationLine, color: 'black'}}>
           {note.title}
@@ -42,16 +46,23 @@ export default function Note({note, handlePressEdit}: NoteProps): JSX.Element {
         <View style={styles.buttons}>
           <Pressable
             style={styles.button}
-            onPress={() => handlePressEdit(note)}>
+            onPress={() => handleLongPress(note.id)}>
             <Text>
-              <FontAwesomeIcon icon={faPen} />
+              {note.done ? (
+                <FontAwesomeIcon
+                  icon={faSquareCheck}
+                  style={styles.iconLight}
+                />
+              ) : (
+                <FontAwesomeIcon icon={faCircleXmark} style={styles.iconDark} />
+              )}
             </Text>
           </Pressable>
           <Pressable
             style={styles.button}
             onPress={() => handlePressDelete(note.id)}>
             <Text>
-              <FontAwesomeIcon icon={faTrash} />
+              <FontAwesomeIcon icon={faTrash} style={styles.iconDark} />
             </Text>
           </Pressable>
         </View>
@@ -72,6 +83,7 @@ const styles = StyleSheet.create({
   },
   noteTitle: {
     textDecorationStyle: 'solid',
+    textDecorationColor: 'dodgerblue',
   },
   buttons: {
     flexDirection: 'row',
@@ -80,5 +92,16 @@ const styles = StyleSheet.create({
   },
   button: {
     paddingHorizontal: 10,
+  },
+  noteTextContainer: {
+    flex: 1,
+  },
+  iconLight: {
+    backgroundColor: 'white',
+    color: 'dodgerblue',
+  },
+  iconDark: {
+    backgroundColor: 'white',
+    color: 'darkslategrey',
   },
 });

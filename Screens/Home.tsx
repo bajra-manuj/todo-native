@@ -7,7 +7,7 @@
 
 import 'react-native-get-random-values';
 import {v4 as uuidv4} from 'uuid';
-import React, {useRef, useState} from 'react';
+import React, {useState} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -19,9 +19,7 @@ import {
 import Note from '../Components/Note';
 import {NoteType} from '../Components/Note';
 import {useDispatch, useSelector} from 'react-redux';
-import {addNewNote, updateNote} from '../slices/noteSlice';
-
-type Mode = 'edit' | 'add';
+import {addNewNote} from '../slices/noteSlice';
 
 function createNote(text: string): NoteType {
   return {
@@ -34,66 +32,32 @@ function createNote(text: string): NoteType {
 function Home(): JSX.Element {
   const notes: NoteType[] = useSelector<any, any>(state => state?.note?.notes);
   const [currentNote, setCurrentNote] = useState('');
-  const [currentMode, setCurrentMode] = useState<Mode>('add');
-  const [currentlyEditingNote, setCurrentlyEditingNote] =
-    useState<NoteType | null>(null);
-  const inputRef = useRef<TextInput>(null);
 
   const dispatch = useDispatch();
   const handlePress = () => {
     if (currentNote.length === 0) {
       return;
     }
-    if (currentMode === 'add') {
-      const newNote = createNote(currentNote);
-      dispatch(addNewNote(newNote));
-      setCurrentNote('');
-      return;
-    }
-    if (!currentlyEditingNote) {
-      return;
-    }
-    dispatch(
-      updateNote({...currentlyEditingNote, title: currentNote, done: false}),
-    );
+    const newNote = createNote(currentNote);
+    dispatch(addNewNote(newNote));
     setCurrentNote('');
-    setCurrentlyEditingNote(null);
-    setCurrentMode('add');
-  };
-
-  const handlePressEdit = (note: NoteType) => {
-    setCurrentMode('edit');
-    setCurrentlyEditingNote(note);
-    setCurrentNote(note.title);
-    inputRef.current?.focus();
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.notesContainer}>
         {!!notes.length &&
-          notes.map(note => (
-            <Note key={note.id} note={note} handlePressEdit={handlePressEdit} />
-          ))}
+          notes.map(note => <Note key={note.id} note={note} />)}
       </ScrollView>
       <View style={styles.inputContainer}>
         <TextInput
           value={currentNote}
           placeholder="Enter note"
           onChangeText={text => setCurrentNote(text)}
-          onBlur={() => {
-            setCurrentMode('add');
-            setCurrentlyEditingNote(null);
-            setCurrentNote('');
-          }}
           blurOnSubmit={false}
           onSubmitEditing={() => handlePress()}
-          ref={inputRef}
         />
-        <Button
-          title={currentMode === 'add' ? 'Add Note' : 'Edit Note'}
-          onPress={handlePress}
-        />
+        <Button title="Add note" onPress={handlePress} />
       </View>
     </SafeAreaView>
   );
