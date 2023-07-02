@@ -36,7 +36,7 @@ export default function Note({note, handlePressEdit}: NoteProps): JSX.Element {
           backgroundColor,
         }}
         onLongPress={() => handleLongPress(note.id)}>
-        <Text style={{...styles.noteTitle, textDecorationLine}}>
+        <Text style={{...styles.noteTitle, textDecorationLine, color: 'black'}}>
           {note.title}
         </Text>
         <View style={styles.buttons}>
